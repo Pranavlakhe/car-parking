@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Smart Parking</title>
+  <link rel="stylesheet" href="../static/registration.css">
+</head>
+<body>
+  <div class="register-container">
+    <h2>Car Registration</h2>
+    <form id="registerForm" action="/register" method="POST">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="form-group">
+        <input type="text" id="carNumber" name="carNumber" placeholder=" " required />
+        <label for="carNumber">Car Number</label>
+      </div>
+
+      <div class="form-group">
+        <input type="text" id="ownerName" name="ownerName" placeholder=" " required />
+        <label for="ownerName">Owner Name</label>
+      </div>
+
+      <div class="form-group">
+        <input type="password" id="password" name="password" placeholder=" " required />
+        <label for="password">Password</label>
+      </div>
+
+      <div class="center-button">
+        <button type="submit" class="cta-button">Register</button>
+      </div>
+
+      <div class="login-link">
+        Already registered? <a href="/login">Login here</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Form validation
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      const carNumber = document.getElementById("carNumber").value.trim();
+      const ownerName = document.getElementById("ownerName").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!carNumber || !ownerName || !password) {
+        e.preventDefault();
+        alert("Please fill in all the fields.");
+        return;
+      }
+
+      // Basic car number validation (example format: MH12AB1234)
+      const carNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+      if (!carNumberRegex.test(carNumber)) {
+        e.preventDefault();
+        alert("Please enter a valid car number format (e.g., MH12AB1234)");
+        return;
+      }
+
+      // Password strength validation
+      if (password.length < 6) {
+        e.preventDefault();
+        alert("Password must be at least 6 characters long.");
+        return;
+      }
+    });
+  </script>
+</body>
+</html>

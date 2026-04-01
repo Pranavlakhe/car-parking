@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f4f4;
+  color: #333;
+  text-align: center;
+}
+
+header {
+  padding: 40px 20px;
+  background: #1e88e5;
+  color: #fff;
+}
+
+.pricing {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 40px 20px;
+  gap: 30px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  position: relative;
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.price {
+  font-size: 40px;
+  color: #1e88e5;
+  margin: 10px 0 20px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+li i {
+  color: green;
+  margin-right: 10px;
+}
+
+.back-btn a {
+  margin-top: 20px;
+  padding: 10px 25px;
+  background: #0887f7;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #1668c4;
+}
+
+.popular {
+  border: 2px solid #1e88e5;
+  position: relative;
+}
+
+.tag {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e88e5;
+  color: #fff;
+  padding: 5px 12px;
+  font-size: 14px;
+  border-radius: 20px;
+}
+
+.home-btn {
+  margin: 50px 0 30px;
+}
+
+.back-btn {
+  text-decoration: none;
+ background: #0887f7;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.back-btn:hover {
+  background: #111;
+}

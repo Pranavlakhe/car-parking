@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Parking Spot Registration</title>
+  <link rel="stylesheet" href="../static/form.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="container">
+
+
+    <h2><i class="fas fa-car-side"></i> Register Your Parking Spot</h2>
+    
+    <form id="parkingForm" method="POST" action="/parking-form" enctype="multipart/form-data">
+
+      <div class="row">
+
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="fullName" required />
+        </div>
+
+        <div class="form-group">
+          <label for="mobile">Mobile No.</label>
+          <input type="tel" id="mobile" name="mobile" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="carNumber">Car Number</label>
+          <input type="text" id="carNumber" name="carNumber" placeholder="e.g., MH12AB1234" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="checkinDate">Check-in Date</label>
+          <input type="date" id="checkinDate" name="checkinDate" required />
+        </div>
+        <div class="form-group">
+          <label for="checkoutDate">Check-out Date</label>
+          <input type="date" id="checkoutDate" name="checkoutDate" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="checkin">Check-In Time</label>
+          <input type="time" id="checkin" name="checkin" required />
+        </div>
+        <div class="form-group">
+          <label for="checkout">Check-Out Time</label>
+          <input type="time" id="checkout" name="checkout" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label for="parkingPlan">Parking Plan</label>
+          <select id="parkingPlan" name="parkingPlan" required onchange="calculateRent()">
+            <option value="">Select Plan</option>
+            <option value="hourly">Hourly (₹20/hr)</option>
+            <option value="daily">Daily (₹150/day)</option>
+            <option value="monthly">Monthly (₹3000/month)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="rent">Calculated Rent (₹)</label>
+          <input type="number" id="rent" name="rent" readonly style="background-color: #f8f9fa;" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="images">Upload Spot Images</label>
+        <input type="file" id="images" name="images" multiple />
+      </div>
+
+      <div class="form-group checkbox">
+        <input type="checkbox" id="terms" required />
+        <label for="terms">I agree to <a href="#">Terms and Conditions</a></label>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit 🚀</button>
+    </form>
+
+    <div class="payment">
+      <h3><i class="fas fa-credit-card"></i> Proceed to Payment</h3>
+      <div class="price-display">
+        <div class="price-label">Total Amount:</div>
+        <div class="price-amount"><span id="priceDisplay">₹0</span></div>
+      </div>
+      <div class="payment-methods">
+        <button class="payment-option" data-method="card">
+          <i class="fas fa-credit-card"></i> Credit/Debit Card
+        </button>
+        <button class="payment-option" data-method="upi">
+          <i class="fas fa-mobile-alt"></i> UPI
+        </button>
+        <button class="payment-option" data-method="netbanking">
+          <i class="fas fa-university"></i> Net Banking
+        </button>
+      </div>
+      <button class="pay-btn" id="payNow">
+        <i class="fas fa-lock"></i> Pay Securely
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function calculateRent() {
+      const plan = document.getElementById('parkingPlan').value;
+      const checkinDate = new Date(document.getElementById('checkinDate').value + 'T' + document.getElementById('checkin').value);
+      const checkoutDate = new Date(document.getElementById('checkoutDate').value + 'T' + document.getElementById('checkout').value);
+
+      if (!plan || !checkinDate || !checkoutDate || isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
+        document.getElementById('rent').value = '';
+        document.getElementById('priceDisplay').textContent = '₹0';
+        return;
+      }
+
+      if (checkoutDate <= checkinDate) {
+        alert('❌ Check-out date/time must be after check-in date/time!');
+        document.getElementById('rent').value = '';
+        document.getElementById('priceDisplay').textContent = '₹0';
+        return;
+      }
+
+      const duration = checkoutDate - checkinDate;
+      const hours = duration / (1000 * 60 * 60);
+      const days = duration / (1000 * 60 * 60 * 24);
+      let rent = 0;
+
+      switch(plan) {
+        case 'hourly':
+          rent = Math.ceil(hours) * 20;
+          break;
+        case 'daily':
+          rent = Math.ceil(days) * 150;
+          break;
+        case 'monthly':
+          rent = Math.ceil(days / 30) * 3000;
+          break;
+      }
+
+      document.getElementById('rent').value = rent;
+      document.getElementById('priceDisplay').textContent = `₹${rent}`;
+    }
+
+    // Add event listeners for date/time inputs
+    ['checkinDate', 'checkoutDate', 'checkin', 'checkout'].forEach(id => {
+      document.getElementById(id).addEventListener('change', calculateRent);
+    });
+
+    document.getElementById('parkingForm').addEventListener('submit', function (e) {
+      // Validate form before submission
+
+      // Get form values
+      const rent = parseFloat(document.getElementById('rent').value);
+      const mobile = document.getElementById('mobile').value;
+      const plan = document.getElementById('parkingPlan').value;
+      const checkinDate = new Date(document.getElementById('checkinDate').value + 'T' + document.getElementById('checkin').value);
+      const checkoutDate = new Date(document.getElementById('checkoutDate').value + 'T' + document.getElementById('checkout').value);
+
+      // Validate plan selection
+      if (!plan) {
+        alert('❌ Please select a parking plan!');
+        return;
+      }
+
+      // Validate dates
+      if (checkoutDate <= checkinDate) {
+        alert('❌ Check-out date/time must be after check-in date/time!');
+        return;
+      }
+
+      // Validate mobile number (basic validation)
+      if (!/^\d{10}$/.test(mobile)) {
+        alert('❌ Please enter a valid 10-digit mobile number!');
+        return;
+      }
+
+      // Calculate duration for display
+      const duration = checkoutDate - checkinDate;
+      const hours = Math.ceil(duration / (1000 * 60 * 60));
+      const days = Math.ceil(duration / (1000 * 60 * 60 * 24));
+      const months = Math.ceil(days / 30);
+
+      let durationText = '';
+      switch(plan) {
+        case 'hourly':
+          durationText = `${hours} hour(s)`;
+          break;
+        case 'daily':
+          durationText = `${days} day(s)`;
+          break;
+        case 'monthly':
+          durationText = `${months} month(s)`;
+          break;
+      }
+
+      // Prepare data for API
+      const formData = {
+        fullName: document.getElementById('fullName').value,
+        mobile: mobile,
+        email: document.getElementById('email').value,
+        carNumber: document.getElementById('carNumber').value,
+        checkinDate: document.getElementById('checkinDate').value,
+        checkinTime: document.getElementById('checkin').value,
+        checkoutDate: document.getElementById('checkoutDate').value,
+        checkoutTime: document.getElementById('checkout').value,
+        parkingPlan: plan,
+        rent: rent
+      };
+
+      // Submit the form
+      this.submit();
+    });
+
+    // Add click handlers for payment options
+    document.querySelectorAll('.payment-option').forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.payment-option').forEach(btn => {
+          btn.style.borderColor = '#e0e0e0';
+          btn.style.background = '#fff';
+        });
+        // Add active class to clicked button
+        this.style.borderColor = '#3498db';
+        this.style.background = '#f0f7ff';
+      });
+    });
+  </script>
+
+</body>
+</html>

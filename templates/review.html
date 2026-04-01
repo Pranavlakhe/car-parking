@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parking Review</title>
+  <link rel="stylesheet" href="../static/review.css" />  
+  <!-- admin123 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Customer Reviews</h1>
+    <form id="review-form">
+      <input type="text" id="name" placeholder="Your Name" />
+      
+      <select id="department">
+        <option value="">Select Department</option>
+        <option value="Entrance">Entrance</option>
+        <option value="Billing">Billing</option>
+        <option value="Security">Security</option>
+      </select>
+
+      <div class="stars">
+        <label>Rating:</label>
+        <span data-star="1" class="star">&#9734;</span>
+        <span data-star="2" class="star">&#9734;</span>
+        <span data-star="3" class="star">&#9734;</span>
+        <span data-star="4" class="star">&#9734;</span>
+        <span data-star="5" class="star">&#9734;</span>
+      </div>
+      
+      <input type="hidden" id="rating" value="0" />
+      <textarea id="comment" placeholder="Write your feedback..." required></textarea>
+      <button type="submit">Submit Review</button>
+    </form>
+      <div class="center-button">
+        <a href="/home" class="cta-button">
+          Go Back <i class="fas fa-arrow-left"></i>
+  </a>
+</div>
+
+
+    <div class="reviews" id="reviews-container">
+      <!-- Reviews will appear here -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+  const stars = document.querySelectorAll(".star");
+  const ratingInput = document.getElementById("rating");
+  const reviewForm = document.getElementById("review-form");
+  const reviewsContainer = document.getElementById("reviews-container");
+
+  let isAdmin = false;
+  let selectedRating = 0;
+
+  // Ask for admin access (simple prompt for now)
+  const passcode = prompt("Enter admin passcode (leave blank to continue as guest):");
+  if (passcode === "admin123") {
+    isAdmin = true;
+    alert("Admin access granted. You can delete reviews.");
+  }
+
+  // Star rating interaction
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = parseInt(star.dataset.star);
+      ratingInput.value = selectedRating;
+      updateStars(selectedRating);
+    });
+  });
+
+  function updateStars(rating) {
+    stars.forEach((star, index) => {
+      star.textContent = index < rating ? "★" : "☆";
+    });
+  }
+
+  // Add a review card to DOM
+  function addReviewToDOM(review, index) {
+    const div = document.createElement("div");
+    div.className = "review-card";
+    div.innerHTML = `
+      <h3>${review.name || "Anonymous"}</h3>
+      <div class="meta">${review.department} | ⭐ ${review.rating}</div>
+      <p>${review.comment}</p>
+      ${isAdmin ? `<button class="delete-btn" data-index="${index}">Delete</button>` : ""}
+    `;
+    reviewsContainer.appendChild(div);
+  }
+
+  // Load and render saved reviews
+  function loadReviews() {
+    const saved = JSON.parse(localStorage.getItem("reviews")) || [];
+    reviewsContainer.innerHTML = "";
+    saved.forEach((review, i) => addReviewToDOM(review, i));
+  }
+
+  // Submit review
+  reviewForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const department = document.getElementById("department").value;
+    const rating = parseInt(document.getElementById("rating").value);
+    const comment = document.getElementById("comment").value.trim();
+
+    if (!department || rating === 0 || !comment) {
+      alert("Please fill all fields and provide a rating.");
+      return;
+    }
+
+    const review = { name, department, rating, comment };
+    const saved = JSON.parse(localStorage.getItem("reviews")) || [];
+    saved.push(review);
+    localStorage.setItem("reviews", JSON.stringify(saved));
+
+    reviewForm.reset();
+    updateStars(0);
+    loadReviews();
+  });
+
+  // Delete a review
+  reviewsContainer.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+      const index = e.target.dataset.index;
+      const saved = JSON.parse(localStorage.getItem("reviews")) || [];
+      saved.splice(index, 1);
+      localStorage.setItem("reviews", JSON.stringify(saved));
+      loadReviews();
+    }
+  });
+
+  // Initial load
+  loadReviews();
+});
+
+  </script>
+</body>
+</html>

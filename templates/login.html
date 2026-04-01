@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Smart Parking</title>
+  <link rel="stylesheet" href="../static/login.css">
+
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm" action="/login" method="POST">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="form-group">
+        <input type="text" id="login-username" name="login-username" required placeholder=" " />
+        <label for="login-username">Car Number</label>
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-password" name="login-password" required placeholder=" " />
+        <label for="login-password">Password</label>
+      </div>
+      <div class="center-button">
+        <button type="submit" class="cta-button">Login</button>
+      </div>
+    </form>
+    <a href="/register" class="register-link">Don't have an account? Register</a>
+  </div>
+
+  <script>
+    // Login form is handled by the backend
+  </script>
+
+
+</body>
+</html>
