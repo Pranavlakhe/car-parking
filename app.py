@@ -17,17 +17,35 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # Create upload directory if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# MySQL Configuration from env vars
-MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
-MYSQL_USER = os.getenv('MYSQL_USER', 'root')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-MYSQL_DB = os.getenv('MYSQL_DB', 'car_parking')
+# MySQL Configuration from env vars or DATABASE_URL (Railway)
+import urllib.parse
+
+db_url = os.getenv('DATABASE_URL')
+if db_url and db_url.startswith('mysql://'):
+    parsed = urllib.parse.urlparse(db_url)
+    MYSQL_USER = urllib.parse.unquote(parsed.username)
+    MYSQL_PASSWORD = urllib.parse.unquote(parsed.password)
+    MYSQL_HOST = parsed.hostname
+    MYSQL_PORT = parsed.port or 3306
+    MYSQL_DB = parsed.path[1:]  # remove leading '/'
+else:
+    MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+    MYSQL_USER = os.getenv('MYSQL_USER', 'root')
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+    MYSQL_DB = os.getenv('MYSQL_DB', 'car_parking')
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key_here')
 app.config['SECRET_KEY'] = SECRET_KEY
+
+# Prod upload folder
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', '/app/static/uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def get_db_connection():
     return pymysql.connect(
         host=MYSQL_HOST,
+        port=getattr(globals(), 'MYSQL_PORT', 3306),
         user=MYSQL_USER,
         password=MYSQL_PASSWORD,
         database=MYSQL_DB,
