@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_mysqldb import MySQL
+import pymysql
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
@@ -18,13 +18,22 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # MySQL Configuration from env vars
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', '')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'car_parking')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key_here')
+MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+MYSQL_USER = os.getenv('MYSQL_USER', 'root')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+MYSQL_DB = os.getenv('MYSQL_DB', 'car_parking')
+SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key_here')
+app.config['SECRET_KEY'] = SECRET_KEY
 
-mysql = MySQL(app)
+def get_db_connection():
+    return pymysql.connect(
+        host=MYSQL_HOST,
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database=MYSQL_DB,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
 @app.route('/')
 def car():
@@ -62,17 +71,19 @@ def register():
         password = request.form['password']
         hashed_password = generate_password_hash(password)
 
-        cur = mysql.connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
         try:
             cur.execute("INSERT INTO users (car_number, owner_name, password) VALUES (%s, %s, %s)",
                        (car_number, owner_name, hashed_password))
-            mysql.connection.commit()
+            conn.commit()
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
             flash('Registration failed. Please try again.', 'error')
         finally:
             cur.close()
+            conn.close()
     return render_template('registration.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -81,14 +92,16 @@ def login():
         car_number = request.form['login-username']
         password = request.form['login-password']
 
-        cur = mysql.connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
         cur.execute("SELECT * FROM users WHERE car_number = %s", (car_number,))
         user = cur.fetchone()
         cur.close()
+        conn.close()
 
-        if user and check_password_hash(user[3], password):
-            session['user_id'] = user[0]
-            session['car_number'] = user[1]
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['car_number'] = user['car_number']
             flash('Login successful!', 'success')
             return redirect(url_for('home'))
         else:
@@ -125,7 +138,8 @@ def parking_form():
         
         spot_images_str = ','.join(spot_images) if spot_images else None
 
-        cur = mysql.connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
         try:
             cur.execute("""INSERT INTO parking_bookings 
                        (user_id, full_name, mobile, email, car_number, checkin_date, 
@@ -134,13 +148,14 @@ def parking_form():
                        (session['user_id'], full_name, mobile, email, car_number,
                         checkin_date, checkout_date, checkin_time, checkout_time,
                         parking_plan, rent_amount, spot_images_str))
-            mysql.connection.commit()
+            conn.commit()
             flash('Parking spot booked successfully!', 'success')
             return redirect(url_for('home'))
         except Exception as e:
             flash('Booking failed. Please try again.', 'error')
         finally:
             cur.close()
+            conn.close()
 
     return render_template('form.html')
 
